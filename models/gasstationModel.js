@@ -21,7 +21,6 @@ GasStation.getById = (id) => {
 };
 
 GasStation.update = (id, address, x, y) => {
-  console.log(id, address, x, y);
   return db.none(
     `update gasstations
         		set
