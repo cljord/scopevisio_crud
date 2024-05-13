@@ -38,7 +38,7 @@ const saveGasStationDataToDatabase = async (url) => {
     );
 };
 
-app.use("/", gasStationsRouter);
+app.use("/api/v1/gasstations/", gasStationsRouter);
 
 app.listen(3000, () => {
   saveGasStationDataToDatabase(gasStationDataUrl);
