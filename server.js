@@ -1,4 +1,5 @@
 const express = require("express")
+const gasStationsRouter = require("./routes/gasstationsRouter");
 
 const app = express()
 
@@ -8,7 +9,7 @@ const gasStationDataUrl = "https://geoportal.stadt-koeln.de/arcgis/rest/services
 
 const db = require("./config/config.js");
 
-const saveGasStationDataToDatabase = (url) => {
+const saveGasStationDataToDatabase = async (url) => {
 	fetch(url)
 		.then((response) => response.json())
 		.then((gasStationData) => {
@@ -18,11 +19,19 @@ const saveGasStationDataToDatabase = (url) => {
 			features.forEach((feature) => {
 				const {objectid: id, adresse: address} = feature.attributes;
 				const {x, y} = feature.geometry;
-				// console.log(id, address, x, y);
-				db.none(`insert into gasstations values (${id}, '${address}', ${x}, ${y});`);
+				db.any(`select * from gasstations where id = ${id};`).
+					then((gasStation) => {
+						// only add gasstation to database if gasstation with corresponding
+						// id does not exist already
+						if (gasStation.length === 0) {
+							db.none(`insert into gasstations values (${id}, '${address}', ${x}, ${y});`);
+						}
+					});
 			})
 		}).catch((err) => console.error("Couldn't save gas station data to database, ", err))
 }
+
+app.use("/", gasStationsRouter);
 
 app.listen(3000, () => {
 	saveGasStationDataToDatabase(gasStationDataUrl)
